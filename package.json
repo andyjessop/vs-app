@@ -1,9 +1,11 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "bootstrap": "yarn install"
+  },
   "devDependencies": {
-    "eslint-config-prettier": "^7.0.0",
     "lerna": "^3.22.1"
   },
-  "workspaces": ["packages/*"]
+  "workspaces": ["packages/*", "dev"]
 }
