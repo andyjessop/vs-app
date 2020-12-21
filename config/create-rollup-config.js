@@ -3,6 +3,7 @@ import cleanup from 'rollup-plugin-cleanup';
 import commonjs from '@rollup/plugin-commonjs';
 import eslint from '@rollup/plugin-eslint';
 import json from '@rollup/plugin-json';
+import prettier from 'rollup-plugin-prettier';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from 'rollup-plugin-typescript2';
 import yaml from '@rollup/plugin-yaml';
@@ -19,7 +20,6 @@ export function createRollupConfig(distDir, name, format, suffix) {
     plugins: [
       json({
         compact: true,
-        indent: '  ',
         preferConst: true,
       }),
       yaml(),
@@ -37,6 +37,7 @@ export function createRollupConfig(distDir, name, format, suffix) {
         comments: 'none',
         extensions: ['.ts'],
       }),
+      prettier(),
     ],
   };
 }

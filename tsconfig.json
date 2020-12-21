@@ -3,7 +3,9 @@
 		"allowSyntheticDefaultImports": true,		
 		"esModuleInterop": true,
 		"lib": [
-      "es2017",
+			"es2017",
+			"DOM",
+			"DOM.Iterable"
     ],
 		"module": "ESNext",
 		"moduleResolution": "node",
