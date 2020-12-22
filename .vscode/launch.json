@@ -16,5 +16,35 @@
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true
     },
+    {
+      "type": "node",
+      "name": "jest-di",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+      "args": [
+        "--runInBand",
+        "--config",
+        "jest.config.js",
+      ],
+      "cwd": "${workspaceFolder}/packages/di",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true
+    },
+    {
+      "type": "node",
+      "name": "jest-utils",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+      "args": [
+        "--runInBand",
+        "--config",
+        "jest.config.js",
+      ],
+      "cwd": "${workspaceFolder}/packages/utils",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true
+    },
   ]
 }
