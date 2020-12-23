@@ -64,7 +64,7 @@ export function createContainer(initialServices?: ConstructorCollection): API {
     return true;
   }
 
-  function get(name: string): any | undefined {
+  function get<T>(name: string): T | undefined {
     if (!services[name]) {
       return;
     }
@@ -73,15 +73,15 @@ export function createContainer(initialServices?: ConstructorCollection): API {
       instantiate(name);
     }
 
-    return services[name].instance;
+    return (services[name].instance as unknown) as T;
   }
 
-  function getSingleton(name: string): any | undefined {
+  function getSingleton<T>(name: string): T | undefined {
     if (!services[name]) {
       return;
     }
 
-    return instantiate(name, true);
+    return (instantiate(name, true) as unknown) as T;
   }
 
   function instantiate(name: string, singleton = false): Model {

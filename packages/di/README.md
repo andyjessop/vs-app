@@ -3,61 +3,65 @@
 `@crux/di` is:
 
 - very a very simple dependency injection container for decoupled applications,
-- tiny, weighing in at around 1K minfied (< 400B gzipped),
-- immutable, ensuring predictable state updates throughout your app.
+- tiny, weighing in at around 1K minfied (~700B gzipped),
+- lazily instantiates services,
+- services can be global or singletons.
 
 ## Installation
 
 ```bash
-npm install @crux/state --save
+npm install @crux/di --save
 ```
 
 ## Usage
 
 ```ts
-import { createStore } from '@crux/state';
+import { createContainer } from '@crux/di';
 
 /**
- * Create the initial state.
+ * Create the initial services.
  */
-const initial = {
-  users: {
-    active: [1, 2, 3],
-  },
+const initialServices = {
+  a: () => { ... },
+  b: () => { ... },
+  // service "a" is a dependency of service "c" and is lazily instantiated when "c" is requested
+  c: [(a) => { ... }, 'a'],
 };
 
 /**
- * Create your store from the initial state.
+ * Create the container
  */
-const store = createStore(initial);
+const container = createContainer(initalServices);
 
 /**
- * Create a selector for your callback.
- **/
-const getActiveUsers = (state) => state.users;
+ * Get a global instance.
+ */
+const a1 = container.get('a');
+const a2 = container.get('a');
+
+console.log(a1 === a2); // true
 
 /**
- * Create an observer for the store.
+ * Get a singleton.
  */
-const users = store.subscribe(getActiveUsers, log);
+const b1 = container.get('b');
+const b2 = container.get('b');
+
+console.log(b1 === b2); // false
 
 /**
- * Update the state, and watch it log to the console.
+ * Add a new service.
  */
-store.update(state => {
-  state.users.active = [...state.users.active, 4];
+container.add('d', () => {});
 
-  return state;
-});
-
-/**
- * Log the change event to the console.
- */
-function log(key, value) {
-  console.log(key, value);
-}
+// or with dependencies
+container.add('e', [(a) => { /* do something with a */}, 'a']);
 ```
 
-### A Note on Immutability
+### TypeScript
 
-Notice in the example above that the `users.active` array is updated immutably, by creating a new array reference with the spread operator. This is essential for `@crux/state` to know that the contents of the object have changed.
+Get a typed service by passing in the type when getting the service from the container:
+
+```ts
+const typedService = container.get<MyService>('a');
+```
