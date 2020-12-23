@@ -2,8 +2,8 @@
 
 `@crux/di` is:
 
-- very a very simple dependency injection container for decoupled applications,
-- tiny, weighing in at around 1K minfied (~700B gzipped),
+- a very simple DI container for decoupled applications,
+- tiny, weighing in at ~1KB minfied (~500B gzipped),
 - able to lazily instantiate services,
 - able to instantiate services as globals or singletons.
 
@@ -29,7 +29,7 @@ const initialServices = {
 };
 
 /**
- * Create the container
+ * Create the DI container.
  */
 const container = createContainer(initalServices);
 
@@ -44,8 +44,8 @@ console.log(a1 === a2); // true
 /**
  * Get a singleton.
  */
-const b1 = container.get('b');
-const b2 = container.get('b');
+const b1 = container.getSingleton('b');
+const b2 = container.getSingleton('b');
 
 console.log(b1 === b2); // false
 
@@ -54,7 +54,9 @@ console.log(b1 === b2); // false
  */
 container.add('d', () => {});
 
-// or with dependencies
+/**
+ * Add a new service with dependencies.
+ */
 container.add('e', [(a) => { /* do something with a */}, 'a']);
 ```
 

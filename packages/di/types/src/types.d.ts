@@ -3,6 +3,7 @@ export declare type ConstructorTuple = [Constructor, ...string[]];
 export declare type API = {
     readonly add: (name: string, constructor: Constructor | ConstructorTuple) => boolean;
     readonly get: (name: string) => any;
+    readonly getSingleton: (name: string) => any;
     readonly remove: (name: string) => true | null;
 };
 export declare type Model = {

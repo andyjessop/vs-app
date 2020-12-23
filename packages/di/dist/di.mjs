@@ -22,9 +22,9 @@ function byDependency(a, b) {
 }
 
 function getDependents(name, services) {
-  return Object.entries(services)
-    .filter(([key, service]) => service.dependencies.includes(name))
-    .map(([key, service]) => service.name);
+  return Object.values(services)
+    .filter((service) => service.dependencies.includes(name))
+    .map((service) => service.name);
 }
 
 function createContainer(initialServices) {
@@ -39,6 +39,7 @@ function createContainer(initialServices) {
   return {
     add,
     get,
+    getSingleton,
     remove,
   };
   function add(name, constructor) {
@@ -76,14 +77,24 @@ function createContainer(initialServices) {
     }
     return services[name].instance;
   }
-  function instantiate(name) {
+  function getSingleton(name) {
+    if (!services[name]) {
+      return;
+    }
+    return instantiate(name, true);
+  }
+  function instantiate(name, singleton = false) {
+    if (services[name] && services[name].instance && !singleton) {
+      return services[name].instance;
+    }
     const dependencies = services[name].dependencies
-      ? services[name].dependencies.map(
-          (dependency) => instantiate(dependency).instance,
-        )
+      ? services[name].dependencies.map((dependency) => instantiate(dependency))
       : [];
-    services[name].instance = services[name].constructor(...dependencies);
-    return services[name];
+    const instance = services[name].constructor(...dependencies);
+    if (!singleton) {
+      services[name].instance = instance;
+    }
+    return instance;
   }
   function remove(name) {
     if (getDependents(name, services).length) {
