@@ -38,22 +38,27 @@ function createStore(initialState) {
     resume,
     state,
     subscribe,
+    subscribers,
     update,
   };
   function subscribe(selector, callback) {
+    const initialValue = selector(state);
     const newSubscriber = {
       callback,
+      currentValue: initialValue,
       selector,
     };
     subscribers.push(newSubscriber);
-    return function unsubscribe() {
-      const index = subscribers.indexOf(
-        (subscriber) => subscriber === newSubscriber,
-      );
+    return {
+      initialValue,
+      unsubscribe,
+    };
+    function unsubscribe() {
+      const index = subscribers.indexOf(newSubscriber);
       if (index !== -1) {
         subscribers.splice(index, 1);
       }
-    };
+    }
   }
   function notify() {
     subscribers.forEach((subscriber) => {
