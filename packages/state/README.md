@@ -34,7 +34,7 @@ const store = createStore(initial);
 /**
  * Create a selector for your callback.
  **/
-const getActiveUsers = (state) => state.users;
+const getActiveUsers = (state) => state.users.active;
 
 /**
  * Create an observer for the store.
