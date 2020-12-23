@@ -1,9 +1,9 @@
-# Crux State
+# Crux Dependency Injection
 
-`@crux/state` is:
+`@crux/di` is:
 
-- very simple state management for the browser,
-- tiny, weighing in at < 600B minfied (< 400B gzipped),
+- very a very simple dependency injection container for decoupled applications,
+- tiny, weighing in at around 1K minfied (< 400B gzipped),
 - immutable, ensuring predictable state updates throughout your app.
 
 ## Installation

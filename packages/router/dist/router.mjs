@@ -362,5 +362,5 @@ function createRouter(base, initialRoutes, emitter = createEventEmitter()) {
   }
 }
 
-export { createRouter };
+export { Router, createRouter };
 //# sourceMappingURL=router.mjs.map

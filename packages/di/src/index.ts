@@ -25,6 +25,7 @@ export function createContainer(initialServices?: ConstructorCollection): API {
   return {
     add,
     get,
+    getSingleton,
     remove,
   };
 
@@ -75,16 +76,30 @@ export function createContainer(initialServices?: ConstructorCollection): API {
     return services[name].instance;
   }
 
-  function instantiate(name: string): Model {
+  function getSingleton(name: string): any | undefined {
+    if (!services[name]) {
+      return;
+    }
+
+    return instantiate(name, true);
+  }
+
+  function instantiate(name: string, singleton = false): Model {
+    if (services[name] && services[name].instance && !singleton) {
+      return services[name].instance;
+    }
+
     const dependencies = services[name].dependencies
-      ? services[name].dependencies.map(
-          (dependency) => instantiate(dependency).instance,
-        )
+      ? services[name].dependencies.map((dependency) => instantiate(dependency))
       : [];
 
-    services[name].instance = services[name].constructor(...dependencies);
+    const instance = services[name].constructor(...dependencies);
 
-    return services[name];
+    if (!singleton) {
+      services[name].instance = instance;
+    }
+
+    return instance;
   }
 
   function remove(name: string): true | null {

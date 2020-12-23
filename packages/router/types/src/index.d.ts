@@ -1,6 +1,2 @@
-import { Router } from './router/types';
-import { EventEmitter } from '@crux/utils';
-/**
- * Create a router.
- */
-export declare function createRouter(base: string, initialRoutes: Record<string, string>, emitter?: EventEmitter.API): Router.API;
+export { createRouter } from './router/create-router';
+export { Router } from './router/types';

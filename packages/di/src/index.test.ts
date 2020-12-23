@@ -49,12 +49,37 @@ describe('@crux/di', () => {
 
     expect(container.get('a').get()).toEqual('a');
   });
+
+  test('should get a singleton', () => {
+    const a1 = container.getSingleton('a');
+    const a2 = container.getSingleton('a');
+
+    expect(a1 === a2).toEqual(false);
+  });
+
+  test('should not instantiate dependencies as singletons', () => {
+    const c1 = container.getSingleton('c');
+    const a = container.get('a');
+
+    a.set('x');
+
+    const c2 = container.getSingleton('c');
+
+    expect(c1 === c2).toEqual(false);
+    expect(a.getStr()).toEqual('x');
+  });
 });
 
 function createA() {
+  let strA: string;
+
   return {
     get: () => 'a',
-    set: (str: 'a') => 'a',
+    getStr: () => strA,
+    set: (str: string) => {
+      strA = str;
+      return strA;
+    },
   };
 }
 

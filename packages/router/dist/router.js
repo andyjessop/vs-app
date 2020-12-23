@@ -8,13 +8,12 @@
 })(this, function (exports) {
   'use strict';
 
-  var Router;
   (function (Router) {
     let Events;
     (function (Events) {
       Events['Transition'] = 'transition';
     })((Events = Router.Events || (Router.Events = {})));
-  })(Router || (Router = {}));
+  })(exports.Router || (exports.Router = {}));
 
   function createEventEmitter() {
     const listeners = [];
@@ -304,11 +303,11 @@
       const lastRoute = currentRoute;
       currentRoute = getMatchingRoute(window.location.href);
       emitter.emit(
-        Router.Events.Transition,
+        exports.Router.Events.Transition,
         buildEvent({
           last: lastRoute,
           next: currentRoute,
-          type: Router.Events.Transition,
+          type: exports.Router.Events.Transition,
         }),
       );
     }
@@ -364,11 +363,11 @@
         window.history.pushState({ name: route.name, params }, '', fullURL);
       }
       emitter.emit(
-        Router.Events.Transition,
+        exports.Router.Events.Transition,
         buildEvent({
           last: lastRoute,
           next: currentRoute,
-          type: Router.Events.Transition,
+          type: exports.Router.Events.Transition,
         }),
       );
     }

@@ -8,6 +8,7 @@ export type API = {
     constructor: Constructor | ConstructorTuple,
   ) => boolean;
   readonly get: (name: string) => any;
+  readonly getSingleton: (name: string) => any;
   readonly remove: (name: string) => true | null;
 };
 
