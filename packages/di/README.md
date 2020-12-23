@@ -4,8 +4,8 @@
 
 - very a very simple dependency injection container for decoupled applications,
 - tiny, weighing in at around 1K minfied (~700B gzipped),
-- lazily instantiates services,
-- services can be global or singletons.
+- able to lazily instantiate services,
+- able to instantiate services as globals or singletons.
 
 ## Installation
 
