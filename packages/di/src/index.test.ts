@@ -68,6 +68,12 @@ describe('@crux/di', () => {
     expect(c1 === c2).toEqual(false);
     expect(a.getStr()).toEqual('x');
   });
+
+  test('should not instantiate dependencies until dependent is instantiated', () => {
+    container.add('e', [createE, 'b']);
+
+    expect(container.services.b.instance).toBeUndefined();
+  });
 });
 
 function createA() {

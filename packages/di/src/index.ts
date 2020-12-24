@@ -27,6 +27,7 @@ export function createContainer(initialServices?: ConstructorCollection): API {
     get,
     getSingleton,
     remove,
+    services,
   };
 
   function add(
