@@ -1,4 +1,4 @@
-import { createAsyncQueue } from '@crux/utils';
+import { createAsyncQueue, createEventEmitter, EventEmitter } from '@crux/utils';
 import { Router } from '@crux/router';
 import { Container, createContainer } from '@crux/di';
 import { Layout } from './types';
@@ -29,20 +29,19 @@ export async function createApp({
   const router = createRouter(baseRoute, routes);
 
   const container = createContainer({
+    hooks: createEventEmitter,
     router: () => router,
     ...servicesCollection,
   });
 
-  const views = createViews(viewsCollection);
-
-  const mounter = createMounter(container, views, '[data-view-id]');
+  const mounter = createMounter(container, viewsCollection, '[data-view-id]');
 
   const queue = createAsyncQueue();
 
-  const modules = createModules(modulesCollection);
+  const modules = await createModules(modulesCollection, container);
 
   router.addListener(Router.Events.Transition, () => {
-    queue.add(modules.handleRouteTransition, router.getCurrentRoute());
+    queue.add(modules.onRouteEnter, router.getCurrentRoute());
 
     dispatch();
   });
@@ -52,20 +51,38 @@ export async function createApp({
     router,
   };
 
-  function dispatch(module?: string, action?: string, data?: any) {
-    queue.add(queuedDispatch, module, action, data);
+  function dispatch(moduleName?: string, action?: string, data?: any) {
+    queue.add(queuedDispatch, moduleName, action, data);
 
     queue.flush();
   }
 
-  async function queuedDispatch(module?: string, action?: string, data?: any) {
+  async function queuedDispatch(moduleName?: string, action?: string, data?: any) {
+    const hooks = container.get<EventEmitter.API>('hooks');
+
+    await hooks?.emit('beforeModule', { module, action, data });
+
     // Handle the action in the primary module.
-    if (module && action) {
-      modules.run(module, action, data);
+    if (moduleName && action) {
+      let module = modules.get(moduleName);
+
+      if (!module) {
+        module = await modules.getDynamic(moduleName);
+      }
+
+      if (module) {
+        module.actions[action](data);
+      }
     }
+
+    await hooks?.emit('beforeLayout', { module, action, data });
 
     await layout.update(container);
 
+    await hooks?.emit('beforeMounter', { module, action, data });
+
     await mounter.run();
+
+    await hooks?.emit('afterMounter', { module, action, data });
   }
 }

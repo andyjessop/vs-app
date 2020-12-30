@@ -7,7 +7,7 @@ export interface API {
 
 export type Constructor = (
   container: Container.API,
-  views: Views.Collection,
+  views: Views.ConstructorCollection,
   selector?: string,
 ) => API;
 

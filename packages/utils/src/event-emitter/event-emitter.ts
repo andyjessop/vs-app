@@ -7,7 +7,7 @@ export type Handler = (event: Event) => any;
 
 export interface API {
   addListener: (type: string, handler: Handler) => void;
-  emit: (type: string, data?: any) => void;
+  emit: (type: string, data?: any) => Promise<void[]>;
   removeListener: (type: string, handler: Handler) => void;
 }
 
@@ -40,16 +40,23 @@ export function createEventEmitter(): API {
   /**
    * Emit an event.
    */
-  function emit(type: string, data: any): void {
+  function emit(type: string, data: any): Promise<void[]> {
     let listener: Listener;
+    const promises: Promise<void>[] = [];
 
     for (listener of listeners) {
       if (listener.type !== type) {
         continue;
       }
 
-      listener.handler(data);
+      const result = listener.handler(data);
+
+      if (result.then) {
+        promises.push(result);
+      }
     }
+
+    return Promise.all(promises);
   }
 
   /**
