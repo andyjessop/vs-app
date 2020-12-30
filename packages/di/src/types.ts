@@ -27,7 +27,6 @@ export type API = {
     name: string,
     constructor: Constructor | ConstructorTuple,
   ) => boolean;
-  destroy(name: string): boolean;
   get<T = any>(name: string): T | undefined;
   getSingleton<T = any>(name: string): T | undefined;
   readonly remove: (name: string) => true | null;

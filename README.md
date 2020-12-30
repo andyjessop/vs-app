@@ -21,7 +21,8 @@ In summary, `crux`:
 ## Usage
 
 ```ts
-import { createApp } from '@crux/app';
+import { createApp, createStoreModule } from '@crux/app';
+import { createStore } from '@crux/state';
 import { layout } from 'my-app/layout';
 import { post } from 'my-app/views';
 import { user } from 'my-app/modules';
@@ -49,7 +50,27 @@ const app = createApp({
      * on page load.
      */
     posts: (container) => import('my-app/modules/posts').then(mod => mod.posts(container)),
-    user,
+
+    /**
+     * Modules can be loaded only for a specific route or routes. They will be instantiated when
+     * entering that URL, and destroyed when leaving it.
+     */
+    user: {
+      module: (container) => import('my-app/modules/users').then(mod => mod.users(container)),
+      routes: [
+        // routes can be specified by name...
+        'users',
+
+        // ...or with specific route parameters as defined in the routes section below
+        { name: 'users', params: { id: 3 } }
+      ]
+    },
+
+    /**
+     * A core "store" module is provided to hook up the crux state service to the app.
+     * Add it in here to enable its use.
+     */
+    store: createStoreModule,
   },
 
   /**
@@ -57,7 +78,17 @@ const app = createApp({
    */
   routes: {
     post: '/posts/:id',
-    posts: { path: 'posts', modules: ['posts'] },
+    posts: 'posts'
+  },
+
+  /**
+   * Define your app-wide services here, they will be injected into the layout, modules, and views.
+   * Services can be imported dynamically, and will be lazily instantiated.
+   **/
+  services: {
+    http: () => import('my-app/services/http').then(mod => mod.default),
+    cache: createLocalStorageService
+    store: createStore,
   },
 
   /*
@@ -69,12 +100,35 @@ const app = createApp({
     post: (container) => { mount, unmount, subscribe },
 
     /**
-     * Views can also be imported dynamically.
+     * Views can also be imported dynamically (recommended).
      */
     posts: (container) => import('my-app/views/posts').then(mod => mod.posts(container)),
   },
 });
 ```
+
+## Dependency Injection
+
+A dependency injection (DI) container is provided to decouple your modules and views from your services. The container is injected into the modules and views during instantiation, so that they have free access to those services at any time:
+
+```ts
+// inside a module
+function createMyModule(container: Container.API) {
+  return {
+    actions: {
+      doSomething: (withSomeData) => {
+        const http = container.get<HTTP>('http'); // Type hint to get type inference
+        const cache = container.get<Cache>('cache');
+
+        http?.post('/some-url', withSomeData)
+          .then(res => cache.set(res));
+      }
+    }
+  }
+}
+```
+
+Both the `router` and the `hooks` API (more on that later) are available in the DI container.
 
 ## Layout
 
@@ -87,7 +141,7 @@ This example of the `layout` uses `lit-html`:
 ```ts
 import { html, render } from 'lit-html';
 
-export function layout(el, { modules, router }) {
+export function layout(el, container) {
   return {
     update,
   };
@@ -116,22 +170,26 @@ export function layout(el, { modules, router }) {
 In the example above, the `layout` provides root elements for `post` and `posts`. These are the "views" that we defined earlier. After the template is rendered, `crux` will first `unmount` any views that no longer exist, and `mount` any new views defined by the `layout`. The views, therefore, hook into these lifecyle events by providing `mount` and `unmount` functions to enable the view to initialise and destroy itself:
 
 ```ts
+import type { Router } from '@crux/router';
+
 /**
  * The view accepts the `context` as a parameter when instantiated, and also on both
  * mount and unmount.
  **/
-export function post({ modules, router }) {
+export function post(container: Container.API) {
+  const router = container.get<Router>('router');
+
   return {
     mount, unmount,
   };
 
-  function mount(el, { modules, router }) {
-    const postId = router.getCurrentRoute()?.params.id;
+  function mount(el) {
+    const postId = router?.getCurrentRoute()?.params.id;
 
     el.innerHTML = `postId: ${postId}`;
   }
 
-  function unmount(el, { modules, router }) {
+  function unmount(el) {
     el.innerHTML = '';
   }
 }
@@ -141,9 +199,148 @@ export function post({ modules, router }) {
 
 ## Modules
 
-Modules can be registered to and unregistered from the app programmatically:
+Modules provide business logic to the app, reacting to UI events, updating state, and interfacing with external services. Modules can define `actions` to respond to specific UI events fired with `dispatch`:
 
 ```ts
-app.modules.register('authors', authors);
+// In myModule
+export function myModule() {
+  return {
+    actions: {
+      logData: (data) =>  { console.log(data) }
+    }
+  };
+}
 
-app.modules.unregister('authors');
+// then somewhere in the app
+dispatch('myModule', 'logData', data);
+```
+
+Modules can provide a `destroy` method, in case they want to do any cleanup like, for example, in the core `store` module:
+
+```ts
+...
+  hooks.addListener('beforeModule', pauseUpdates);
+  hooks.addListener('afterMounter', resumeUpdates);
+
+  return {
+    destroy,
+  };
+
+  function destroy() {
+    hooks?.removeListener('beforeModule', pauseUpdates);
+    hooks?.removeListener('afterMounter', resumeUpdates);
+  }
+```
+
+Modules have access to the container, to interface with external services:
+
+```ts
+export function logger(container: Container.API) {
+  const http = container.get<HTTP>('http');
+
+  return {
+    actions: {
+      logData: (data) =>  {
+        http?.post('/log-endpoint', data);
+      }
+    }
+  };
+}
+```
+
+## State
+
+There is no "built-in" state management library, so you are free to use any you like, but we've provided a tiny store module that chimes well with the core concepts of crux of being small, simple, and de-coupled. To use it, provide `createStore` as a service and `createStoreModule` as a module:
+
+```ts
+import { createStore } from '@crux/state';
+import { createStoreModule } from '@crux/app';
+
+createApp({
+  ...
+
+  modules: {
+    ...
+
+    store: createStoreModule,
+  },
+
+  ...
+
+  services: {
+    ...
+
+    store: createStore,
+  }
+})
+```
+
+For a detailed view of the API, see the `@crux/state` documentation.
+
+Let's create a module here, that will update the state, and a view that will observe it and update itself.
+
+### The Module
+
+```ts
+export function users(container: Container.API) {
+  const http = container.get<HTTP>('http');
+  const store = container.get<State<MyStateInterface>>('store');
+
+  return {
+    actions: {
+      fetchUsers: () =>  {
+        http?.get('/users').then(updateStore);
+      }
+    }
+  };
+
+  function updateStore(users) {
+    store.update((state) => {
+      // users is updated immutably in order to be able to observe it in the view
+      state.users = users;
+
+      return state;
+    });
+  }
+}
+```
+
+### The View
+
+```ts
+/**
+ * The users view sets up a subscriber to the store using a state selector,
+ * and updates the innerHTML whenever the subscription updates.
+ **/
+export function users(container: Container.API) {
+  const store = container.get<State<MyStateInterface>>('store');
+  let unsubscribe;
+
+  return {
+    mount, unmount,
+  };
+
+  function getUsers(state) {
+    return state.users;
+  }
+
+  function mount(el) {
+    const {
+      initialValue,
+      unsubscribe: unsub,
+    } = store.subscribe(getUsers, update);
+
+    unsubsribe = unsub;
+
+    update(initialValue);
+  }
+
+  function unmount(el) {
+    unsubscribe();
+  }
+
+  function update(users) {
+    el.innerHTML = JSON.stringify(users);
+  }
+}
+```

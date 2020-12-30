@@ -54,8 +54,6 @@ export function createAsyncQueue(): API {
     const entry = entries[0];
 
     if (!entry) {
-      flushing = false;
-
       return;
     }
 
@@ -68,9 +66,7 @@ export function createAsyncQueue(): API {
 
       entries.shift();
 
-      if (entries.length === 0) {
-        flushing = false;
-      }
+      flushing = false;
 
       return flush();
     } catch (e) {

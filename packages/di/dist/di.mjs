@@ -102,9 +102,19 @@ function createContainer(initialServices) {
     return instance;
   }
   function remove(name) {
+    var _a, _b;
+    if (!services[name]) {
+      return null;
+    }
     if (getDependents(name, services).length) {
       return null;
     }
+    (_b =
+      (_a = services[name].instance) === null || _a === void 0
+        ? void 0
+        : _a.destroy) === null || _b === void 0
+      ? void 0
+      : _b.call(_a);
     delete services[name];
     return true;
   }

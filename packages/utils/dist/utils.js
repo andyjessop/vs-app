@@ -74,7 +74,6 @@
       }
       const entry = entries[0];
       if (!entry) {
-        flushing = false;
         return;
       }
       flushing = true;
@@ -82,9 +81,7 @@
         const result = await entry.fn(...entry.params);
         entry.resolve(result);
         entries.shift();
-        if (entries.length === 0) {
-          flushing = false;
-        }
+        flushing = false;
         return flush();
       } catch (e) {
         entry.reject(e);

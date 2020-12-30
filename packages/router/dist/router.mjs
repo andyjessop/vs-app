@@ -19,12 +19,17 @@ function createEventEmitter() {
   }
   function emit(type, data) {
     let listener;
+    const promises = [];
     for (listener of listeners) {
       if (listener.type !== type) {
         continue;
       }
-      listener.handler(data);
+      const result = listener.handler(data);
+      if (result.then) {
+        promises.push(result);
+      }
     }
+    return Promise.all(promises);
   }
   function removeListener(type, handler) {
     const ndx = listeners.findIndex((l) => type === l.type && handler === l.handler);
