@@ -1,7 +1,5 @@
 <img src="./logo.png" /></div>
 
-# Crux
-
 The framework for long-lived code in browser-based TypeScript/Javascript apps.
 
 The core concept of `crux` is that you shouldn't be locked-into a single framework that defines the structure of your code and makes it difficult to change. Instead, the majority of your code should be framework-agnostic, written in the language of your domain, and should be able to simply plug-in to a minimal core. `crux` is that core.
