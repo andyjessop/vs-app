@@ -9,6 +9,10 @@
 })(this, function (exports) {
   'use strict';
 
+  var types = /*#__PURE__*/ Object.freeze({
+    __proto__: null,
+  });
+
   function allDependenciesExist(services, dependencies) {
     const servicesKeys = Object.keys(services);
     return dependencies.every((dependency) =>
@@ -54,6 +58,7 @@
       get,
       getSingleton,
       remove,
+      services,
     };
     function add(name, constructor) {
       if (services[name]) {
@@ -120,6 +125,7 @@
     }
   }
 
+  exports.Container = types;
   exports.createContainer = createContainer;
 
   Object.defineProperty(exports, '__esModule', { value: true });

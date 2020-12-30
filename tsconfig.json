@@ -14,7 +14,7 @@
 		"noImplicitAny": true,
 		"resolveJsonModule": true,
 		"strict": true,
-		"target": "esnext",
+		"target": "ES2019",
 		"typeRoots": [
       "./node_modules/@types",
     ]

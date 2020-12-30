@@ -11,7 +11,7 @@ import { paramsToStrings } from './params-to-strings';
  */
 export function createRouter(
   base: string,
-  initialRoutes: Record<string, string>,
+  initialRoutes: Router.RoutesConfig,
   emitter: EventEmitter.API = createEventEmitter(),
 ): Router.API {
   const trimmedBase = trimSlashes(base);

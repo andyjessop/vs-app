@@ -35,4 +35,8 @@ export namespace Router {
   }
 
   export type Routes = Record<string, Route>;
+
+  export type RoutesConfig = Record<string, string>;
+
+  export type Constructor = (baseRoute: string, config: RoutesConfig) => API;
 }

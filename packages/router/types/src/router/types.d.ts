@@ -28,4 +28,6 @@ export declare namespace Router {
         params: any;
     }
     type Routes = Record<string, Route>;
+    type RoutesConfig = Record<string, string>;
+    type Constructor = (baseRoute: string, config: RoutesConfig) => API;
 }

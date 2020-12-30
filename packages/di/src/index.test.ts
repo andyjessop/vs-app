@@ -1,5 +1,5 @@
 import { API } from './types';
-import { createContainer } from '.';
+import { createContainer } from './container';
 
 let initialServices: Record<string, any>;
 let container: API;

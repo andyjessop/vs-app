@@ -1,2 +1,3 @@
-import { API, ConstructorCollection } from './types';
-export declare function createContainer(initialServices?: ConstructorCollection): API;
+import * as Container from './types';
+export { createContainer } from './container';
+export { Container };

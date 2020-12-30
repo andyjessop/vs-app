@@ -7,6 +7,11 @@ export type ConstructorCollection = Record<
   Constructor | ConstructorTuple
 >;
 
+export type ConstructorCollectionTuple = [
+  string,
+  Constructor | ConstructorTuple,
+];
+
 export type Model = {
   readonly constructor: Constructor;
   readonly dependencies: readonly string[];
@@ -22,8 +27,9 @@ export type API = {
     name: string,
     constructor: Constructor | ConstructorTuple,
   ) => boolean;
-  readonly get: (name: string) => any;
-  readonly getSingleton: (name: string) => any;
+  destroy(name: string): boolean;
+  get<T = any>(name: string): T | undefined;
+  getSingleton<T = any>(name: string): T | undefined;
   readonly remove: (name: string) => true | null;
   readonly services: Collection;
 };

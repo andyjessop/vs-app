@@ -1,79 +1,71 @@
-import { createAsyncQueue, createEventEmitter } from '@crux/utils';
+import { createAsyncQueue } from '@crux/utils';
 import { Router } from '@crux/router';
-import { createContainer } from '@crux/di';
-import type { Layout, Modules, View } from './types';
-import { createMounter } from './mounter';
+import { Container, createContainer } from '@crux/di';
+import { Layout } from './types';
+import * as Modules from './modules/types';
+import * as Mounter from './mounter/types';
+import * as Views from './views/types';
+import { createModules } from './modules/modules';
 
-export async function createApp<T extends Modules, U extends Record<string, View>>({
+export async function createApp({
+  baseRoute,
+  createMounter,
+  createRouter,
   layout,
-  modules: initialModules,
-  views: initialViews,
-  router,
+  modules: modulesCollection,
+  routes,
+  services: servicesCollection,
+  views: viewsCollection,
 }: {
+  baseRoute: string;
+  createMounter: Mounter.Constructor;
   layout: Layout;
-  modules: T;
-  router?: Router.API;
-  views: U;
+  modules: Modules.ConstructorCollection;
+  routes: Router.RoutesConfig;
+  createRouter: Router.Constructor;
+  services: Container.ConstructorCollection;
+  views: Views.ConstructorCollection;
 }) {
-  const coreRouter = await (router ??
-    import('@crux/router').then((mod) => mod.createRouter('', {})));
+  const router = createRouter(baseRoute, routes);
 
   const container = createContainer({
-    core: () => ({
-      mounter: createMounter('[data-view-id]'),
-      router: coreRouter,
-    }),
+    router: () => router,
+    ...servicesCollection,
   });
 
-  const modules = { ...initialModules };
-  const views = { ...initialViews };
+  const views = createViews(viewsCollection);
 
-  const emitter = createEventEmitter();
+  const mounter = createMounter(container, views, '[data-view-id]');
+
   const queue = createAsyncQueue();
 
-  container.get('router').addListener(Router.Events.Transition, () => dispatch());
+  const modules = createModules(modulesCollection);
+
+  router.addListener(Router.Events.Transition, () => {
+    queue.add(modules.handleRouteTransition, router.getCurrentRoute());
+
+    dispatch();
+  });
 
   return {
-    ...emitter,
     dispatch,
     router,
   };
 
   function dispatch(module?: string, action?: string, data?: any) {
     queue.add(queuedDispatch, module, action, data);
+
     queue.flush();
   }
 
   async function queuedDispatch(module?: string, action?: string, data?: any) {
-    const mounter = container.get('mounter');
-
-    let event;
-
     // Handle the action in the primary module.
     if (module && action) {
-      modules[module].actions[action](data);
+      modules.run(module, action, data);
     }
 
-    layout.update(event, container);
+    await layout.update(container);
 
-    const { mount, unmount } = mounter.get();
-
-    await Promise.all(
-      unmount.map(({ el, viewId }) => views[viewId]?.unmount({ currentRoute, el, modules })),
-    );
-
-    await Promise.all(
-      mount.map(async ({ el, viewId }) => {
-        views[viewId] = typeof views[viewId] === 'function' ? await views[viewId]() : views[viewId];
-
-        views[viewId]?.mount({ currentRoute, el, modules });
-      }),
-    );
+    await mounter.run();
   }
-}
-
-function getInitialState(obj: Modules) {
-  return Object.entries(obj).reduce((acc, [key, val]) => {
-    acc[key] = val.initialState;
-  }, <any>{});
 }

@@ -48,14 +48,7 @@ const app = createApp({
      * Modules can be imported dynamically and lazily instantiated to save time
      * on page load.
      */
-    posts: {
-      module: () => import('my-app/modules/posts').then(mod => mod.posts()),
-
-      /**
-       * Modules can be loaded only for a specific route.
-       */
-      route: 'posts',
-    },
+    posts: (container) => import('my-app/modules/posts').then(mod => mod.posts(container)),
     user,
   },
 
@@ -64,7 +57,7 @@ const app = createApp({
    */
   routes: {
     post: '/posts/:id',
-    posts: 'posts',
+    posts: { path: 'posts', modules: ['posts'] },
   },
 
   /*
@@ -73,12 +66,12 @@ const app = createApp({
    * to events emanating from the modules
    */
   views: {
-    post,
+    post: (container) => { mount, unmount, subscribe },
 
     /**
      * Views can also be imported dynamically.
      */
-    posts: () => import('my-app/views/posts').then(mod => mod.posts()),
+    posts: (container) => import('my-app/views/posts').then(mod => mod.posts(container)),
   },
 });
 ```
