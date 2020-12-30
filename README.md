@@ -1,8 +1,8 @@
-<div align="center"><img src="./dev/public/images/logo.png" width="200px" /><p width="300px"></div>
+<img src="./logo.png" /></div>
 
-<p align="center"><strong>The framework for long-lived code in browser-based TypeScript/Javascript apps</strong></p>
+# Crux
 
----
+The framework for long-lived code in browser-based TypeScript/Javascript apps.
 
 The core concept of `crux` is that you shouldn't be locked-into a single framework that defines the structure of your code and makes it difficult to change. Instead, the majority of your code should be framework-agnostic, written in the language of your domain, and should be able to simply plug-in to a minimal core. `crux` is that core.
 
@@ -16,7 +16,8 @@ In summary, `crux`:
 - promotes highly-decoupled and long-lived code,
 - does not tie your code to a single view library,
 - provides simple integration for micro-frontends,
-- lowers your level of technical debt.
+- lowers your level of technical debt,
+- is fully-featured but is tiny (< 7KB all-in)
 
 ## Usage
 
