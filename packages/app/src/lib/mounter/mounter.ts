@@ -1,19 +1,21 @@
 import * as Mounter from './types';
 import * as Views from '../views/types';
 import { Container } from '@crux/di';
+import type { AppServices } from '../types';
 
 interface DOMRoot {
   el: Element;
   viewId: string;
 }
 
-export function createMounter(
-  container: Container.API,
-  views: Views.ConstructorCollection,
+export function createMounter<T>(
+  app: Container.API<AppServices>,
+  container: Container.API<T>,
+  views: Views.ConstructorCollection<T>,
   selector: string = '[data-view-id]',
   attribute: string = 'data-view-id',
 ): Mounter.API {
-  const mountedViews: Map<string, [Element, Views.View]> = new Map();
+  const mountedViews: Map<string, [Element, Views.View<T>]> = new Map();
 
   return {
     run,
@@ -94,7 +96,7 @@ export function createMounter(
           return Promise.resolve(null);
         }
 
-        const view = await viewConstructor(container);
+        const view = await viewConstructor(app, container);
 
         mountedViews.set(viewId, [el, view]);
 

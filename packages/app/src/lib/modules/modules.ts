@@ -1,19 +1,23 @@
 import { Container } from '@crux/di';
 import { Router } from '@crux/router';
 import { createAsyncQueue } from '@crux/utils';
+import { AppServices } from '../types';
 import * as Modules from './types';
 
-export async function createModules(
-  collection: Modules.ConstructorCollection,
-  container: Container.API,
-): Promise<Modules.API> {
+export async function createModules<T>(
+  collection: Modules.ConstructorCollection<T>,
+  app: Container.API<AppServices>,
+  container: Container.API<T>,
+): Promise<Modules.API<T>> {
   const routeMap: Map<string, string[]> = new Map();
-  const constructorsMap: Map<string, Modules.Constructor> = new Map();
+  const constructorsMap: Map<string, Modules.Constructor<T>> = new Map();
   const activeModulesMap: Map<string, Modules.Module | Promise<Modules.Module>> = new Map();
   const queue = createAsyncQueue();
 
   routeMap.set(toRouteString('all'), []);
-  Object.entries(collection).forEach(([name, constructor]) => add(name, constructor));
+
+  (Object.entries(collection) || []).forEach(([name, constructor]) => add(name, constructor));
+
   await onRouteEnter({ name: 'all', params: null });
 
   return {
@@ -26,7 +30,7 @@ export async function createModules(
 
   function add(
     name: string,
-    constructor: Modules.Constructor | Modules.ConstructorObject,
+    constructor: Modules.Constructor<T> | Modules.ConstructorObject<T>,
   ): boolean | null {
     // If the constructor is an object then it is associated with one or more routes.
     if (typeof constructor === 'object') {
@@ -58,7 +62,7 @@ export async function createModules(
     routeMap.set(toRouteString('all'), (<string[]>routeMap.get(toRouteString('all'))).concat(name));
 
     constructorsMap.set(name, constructor);
-    activeModulesMap.set(name, constructor(container));
+    activeModulesMap.set(name, constructor(app, container));
 
     return true;
   }
@@ -109,7 +113,7 @@ export async function createModules(
           return false;
         }
 
-        activeModulesMap.set(name, constructor(container));
+        activeModulesMap.set(name, constructor(app, container));
       }
 
       return true;

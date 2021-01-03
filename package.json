@@ -7,5 +7,5 @@
   "devDependencies": {
     "lerna": "^3.22.1"
   },
-  "workspaces": ["packages/*"]
+  "workspaces": ["packages/*", "examples/*"]
 }

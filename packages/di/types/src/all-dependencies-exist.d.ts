@@ -1,2 +1,2 @@
 import { Collection } from './types';
-export declare function allDependenciesExist(services: Collection, dependencies: string[]): boolean;
+export declare function allDependenciesExist<T>(services: Collection<T>, dependencies: (keyof T)[]): boolean;

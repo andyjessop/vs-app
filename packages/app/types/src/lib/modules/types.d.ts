@@ -1,17 +1,18 @@
 import { Container } from '@crux/di';
 import { Router } from '@crux/router';
+import { AppServices } from '../types';
 export interface Module {
-    actions: Record<string, Function>;
+    actions?: Record<string, Function>;
     destroy?: () => void;
 }
-export declare type Constructor = (container: Container.API) => Module | Promise<Module>;
-export declare type ConstructorObject = {
-    module: Constructor;
+export declare type Constructor<T> = (app: Container.API<AppServices>, services: Container.API<T>) => Module | Promise<Module>;
+export declare type ConstructorObject<T> = {
+    module: Constructor<T>;
     routes: (string | Router.RouteData)[];
 };
-export declare type ConstructorCollection = Record<string, Constructor | ConstructorObject>;
-export interface API {
-    add(name: string, constructor: Constructor | ConstructorObject): boolean | null;
+export declare type ConstructorCollection<T> = Record<string, Constructor<T> | ConstructorObject<T>>;
+export interface API<T> {
+    add(name: string, constructor: Constructor<T> | ConstructorObject<T>): boolean | null;
     get(name: string): Module | undefined;
     getDynamic(name: string): Promise<Module> | undefined;
     remove(name: string): void;

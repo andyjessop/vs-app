@@ -27,7 +27,7 @@
           continue;
         }
         const result = listener.handler(data);
-        if (result.then) {
+        if (result === null || result === void 0 ? void 0 : result.then) {
           promises.push(result);
         }
       }
@@ -110,12 +110,17 @@
     }
     function emit(type, data) {
       let listener;
+      const promises = [];
       for (listener of listeners) {
         if (listener.type !== type) {
           continue;
         }
-        listener.handler(data);
+        const result = listener.handler(data);
+        if (result === null || result === void 0 ? void 0 : result.then) {
+          promises.push(result);
+        }
       }
+      return Promise.all(promises);
     }
     function removeListener(type, handler) {
       const ndx = listeners.findIndex((l) => type === l.type && handler === l.handler);
@@ -527,49 +532,69 @@
       return true;
     }
     function get(name) {
+      var _a, _b;
       if (!services[name]) {
-        return;
+        throw new Error(`Service ${name} does not exist.`);
       }
-      if (!services[name].instance) {
+      if (!((_a = services[name]) === null || _a === void 0 ? void 0 : _a.instance)) {
         instantiate(name);
       }
-      return services[name].instance;
+      return (_b = services[name]) === null || _b === void 0 ? void 0 : _b.instance;
     }
     function getSingleton(name) {
       if (!services[name]) {
-        return;
+        throw new Error(`Service ${name} does not exist.`);
       }
       return instantiate(name, true);
     }
     function instantiate(name, singleton = false) {
-      if (services[name] && services[name].instance && !singleton) {
+      var _a, _b;
+      if (!services[name]) {
+        throw new Error('Service does not exist');
+      }
+      if (services[name].instance && !singleton) {
         return services[name].instance;
       }
-      const dependencies = services[name].dependencies
-        ? services[name].dependencies.map((dependency) => instantiate(dependency))
+      const dependencies = (
+        (_a = services[name]) === null || _a === void 0 ? void 0 : _a.dependencies
+      )
+        ? (_b = services[name]) === null || _b === void 0
+          ? void 0
+          : _b.dependencies.map((dependency) => instantiate(dependency))
         : [];
-      const instance = services[name].constructor(...dependencies);
+      const instance = services[name].constructor(...(dependencies || []));
       if (!singleton) {
         services[name].instance = instance;
       }
       return instance;
     }
     function remove(name) {
+      var _a, _b, _c;
+      if (!services[name]) {
+        return null;
+      }
       if (getDependents(name, services).length) {
         return null;
       }
+      (_c =
+        (_b = (_a = services[name]) === null || _a === void 0 ? void 0 : _a.instance) === null ||
+        _b === void 0
+          ? void 0
+          : _b.destroy) === null || _c === void 0
+        ? void 0
+        : _c.call(_b);
       delete services[name];
       return true;
     }
   }
 
-  async function createModules(collection, container) {
+  async function createModules(collection, app, container) {
     const routeMap = new Map();
     const constructorsMap = new Map();
     const activeModulesMap = new Map();
     const queue = createAsyncQueue();
     routeMap.set(toRouteString('all'), []);
-    Object.entries(collection).forEach(([name, constructor]) => add(name, constructor));
+    (Object.entries(collection) || []).forEach(([name, constructor]) => add(name, constructor));
     await onRouteEnter({ name: 'all', params: null });
     return {
       add,
@@ -595,7 +620,7 @@
       }
       routeMap.set(toRouteString('all'), routeMap.get(toRouteString('all')).concat(name));
       constructorsMap.set(name, constructor);
-      activeModulesMap.set(name, constructor(container));
+      activeModulesMap.set(name, constructor(app, container));
       return true;
     }
     function get(name) {
@@ -630,7 +655,7 @@
           if (!constructor) {
             return false;
           }
-          activeModulesMap.set(name, constructor(container));
+          activeModulesMap.set(name, constructor(app, container));
         }
         return true;
       });
@@ -675,35 +700,37 @@
     createRouter,
     el,
     layout: createLayout,
-    modules: modulesCollection,
-    routes,
+    modules: modulesCollection = {},
+    routes = {},
     services: servicesCollection,
     views: viewsCollection,
   }) {
     const router = createRouter(baseRoute, routes);
-    const container = createContainer({
+    const services = createContainer(servicesCollection);
+    const app = createContainer({
+      dispatch: () => dispatch,
       hooks: createEventEmitter,
       router: () => router,
-      ...servicesCollection,
     });
-    const layout = createLayout(el, container);
-    const mounter = createMounter(container, viewsCollection, '[data-view-id]');
+    const layout = createLayout(el, app, services);
+    const mounter = createMounter(app, services, viewsCollection, '[data-view-id]');
     const queue = createAsyncQueue();
-    const modules = await createModules(modulesCollection, container);
+    const modules = await createModules(modulesCollection, app, services);
     router.addListener(Router.Events.Transition, () => {
       queue.add(modules.onRouteEnter, router.getCurrentRoute());
       dispatch();
     });
     return {
-      dispatch,
-      router,
+      app,
+      services,
     };
     function dispatch(moduleName, action, data) {
       queue.add(queuedDispatch, moduleName, action, data);
       queue.flush();
     }
     async function queuedDispatch(moduleName, action, data) {
-      const hooks = container.get('hooks');
+      var _a;
+      const hooks = app.get('hooks');
       const hookData = { module: moduleName, action, data };
       await (hooks === null || hooks === void 0 ? void 0 : hooks.emit('beforeModule', hookData));
       if (moduleName && action) {
@@ -712,11 +739,11 @@
           module = await modules.getDynamic(moduleName);
         }
         if (module) {
-          module.actions[action](data);
+          (_a = module.actions) === null || _a === void 0 ? void 0 : _a[action](data);
         }
       }
       await (hooks === null || hooks === void 0 ? void 0 : hooks.emit('beforeLayout', hookData));
-      await layout.update(container);
+      await layout.update(app, services);
       await (hooks === null || hooks === void 0 ? void 0 : hooks.emit('beforeMounter', hookData));
       await mounter.run();
       await (hooks === null || hooks === void 0 ? void 0 : hooks.emit('afterMounter', hookData));
@@ -724,6 +751,7 @@
   }
 
   function createMounter(
+    app,
     container,
     views,
     selector = '[data-view-id]',
@@ -786,7 +814,7 @@
           if (!viewConstructor) {
             return Promise.resolve(null);
           }
-          const view = await viewConstructor(container);
+          const view = await viewConstructor(app, container);
           mountedViews.set(viewId, [el, view]);
           return view.mount(el, container);
         }),
@@ -836,6 +864,33 @@
     __proto__: null,
   });
 
+  function createStoreModule(app, services) {
+    const hooks = app.get('hooks');
+    const store = services.get('store');
+    if (!store) {
+      throw new Error('Store service does not exist.');
+    }
+    hooks.addListener('beforeModule', pauseUpdates);
+    hooks.addListener('afterMounter', resumeUpdates);
+    return {
+      destroy,
+    };
+    function destroy() {
+      hooks === null || hooks === void 0
+        ? void 0
+        : hooks.removeListener('beforeModule', pauseUpdates);
+      hooks === null || hooks === void 0
+        ? void 0
+        : hooks.removeListener('afterMounter', resumeUpdates);
+    }
+    function pauseUpdates() {
+      store === null || store === void 0 ? void 0 : store.pause();
+    }
+    function resumeUpdates() {
+      store === null || store === void 0 ? void 0 : store.resume();
+    }
+  }
+
   exports.App = types$4;
   exports.Layout = types;
   exports.Modules = types$1;
@@ -843,6 +898,7 @@
   exports.Views = types$3;
   exports.createApp = createApp;
   exports.createAppBuilder = createAppBuilder;
+  exports.createStoreModule = createStoreModule;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 });

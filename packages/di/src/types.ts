@@ -1,34 +1,36 @@
-export type Constructor = (...args: any[]) => any;
+export type Constructor<T> = (...args: any[]) => T;
 
-export type ConstructorTuple = [Constructor, ...string[]];
+export type ConstructorTuple<T, U> = [Constructor<T>, ...U[]];
 
-export type ConstructorCollection = Record<
-  string,
-  Constructor | ConstructorTuple
+export type ConstructorCollection<T> = Record<
+  keyof T,
+  Constructor<T[keyof T]> | ConstructorTuple<T[keyof T], keyof T>
 >;
 
-export type ConstructorCollectionTuple = [
-  string,
-  Constructor | ConstructorTuple,
+export type ConstructorCollectionTuple<T> = [
+  keyof T,
+  Constructor<T[keyof T]> | ConstructorTuple<T[keyof T], keyof T>,
 ];
 
-export type Model = {
-  readonly constructor: Constructor;
-  readonly dependencies: readonly string[];
-  instance?: any;
-  name: string;
+export type Model<T> = {
+  readonly constructor: Constructor<T[keyof T]>;
+  dependencies: (keyof T)[];
+  instance?: T[keyof T] & { destroy?: Function };
+  name: keyof T;
   readonly order: number;
 };
 
-export type Collection = Record<string, Model>;
+export type Collection<T> = Partial<Record<keyof T, Model<T>>>;
 
-export type API = {
+export type API<T> = {
   readonly add: (
-    name: string,
-    constructor: Constructor | ConstructorTuple,
+    name: keyof T,
+    constructor:
+      | Constructor<T[keyof T]>
+      | ConstructorTuple<T[keyof T], keyof T>,
   ) => boolean;
-  get<T = any>(name: string): T | undefined;
-  getSingleton<T = any>(name: string): T | undefined;
-  readonly remove: (name: string) => true | null;
-  readonly services: Collection;
+  get<U extends keyof T>(name: U): T[U];
+  getSingleton<U extends keyof T>(name: U): T[U];
+  readonly remove: (name: keyof T) => true | null;
+  readonly services: Collection<T>;
 };

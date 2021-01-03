@@ -1,7 +1,6 @@
-import { Container } from '@crux/di';
 import { Module } from '../types';
 
-export function createC(container: Container.API): Module {
+export function createC(): Module {
   return {
     actions: {
       c: () => 'c',

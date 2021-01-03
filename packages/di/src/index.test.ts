@@ -1,8 +1,31 @@
 import { API } from './types';
 import { createContainer } from './container';
 
-let initialServices: Record<string, any>;
-let container: API;
+interface Services {
+  a: {
+    get: () => string;
+    getStr: () => string;
+    set: (str: string) => string;
+  };
+  b: {
+    get: () => string;
+    set: (str: 'b') => string;
+  };
+  c: {
+    get: () => string;
+    set: (str: 'c') => string;
+  };
+  d: {
+    get: () => string;
+    set: (str: 'd') => string;
+  };
+  e: {
+    get: () => string;
+    set: (str: 'e') => string;
+  };
+}
+let initialServices: any;
+let container: API<Services>;
 
 describe('@crux/di', () => {
   beforeEach(() => {
@@ -34,6 +57,7 @@ describe('@crux/di', () => {
   });
 
   test('should return false if dependency does not exist', () => {
+    // @ts-ignore
     expect(container.add('d', [createD, 'x'])).toEqual(false);
     expect(container.get('d')).toBeUndefined();
   });
@@ -72,7 +96,7 @@ describe('@crux/di', () => {
   test('should not instantiate dependencies until dependent is instantiated', () => {
     container.add('e', [createE, 'b']);
 
-    expect(container.services.b.instance).toBeUndefined();
+    expect(container.services.b?.instance).toBeUndefined();
   });
 });
 

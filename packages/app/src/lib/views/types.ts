@@ -1,16 +1,20 @@
 import { Container } from '@crux/di';
+import { AppServices } from '../types';
 
-export type Mount = (el: Element, container: Container.API) => void; // eslint-disable-line no-undef
+export type Mount<T> = (el: Element, container: Container.API<T>) => void; // eslint-disable-line no-undef
 
-export type Unmount = Mount;
+export type Unmount<T> = Mount<T>;
 
-export type View = {
-  mount: Mount;
-  unmount: Unmount;
+export type View<T> = {
+  mount: Mount<T>;
+  unmount: Unmount<T>;
 };
 
-export type Collection = Map<string, View>;
+export type Collection<T> = Map<string, View<T>>;
 
-export type Constructor = (container: Container.API) => View | Promise<View>;
+export type Constructor<T> = (
+  app: Container.API<AppServices>,
+  container: Container.API<T>,
+) => View<T> | Promise<View<T>>;
 
-export type ConstructorCollection = Record<string, Constructor>;
+export type ConstructorCollection<T> = Record<string, Constructor<T>>;

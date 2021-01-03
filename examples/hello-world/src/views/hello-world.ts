@@ -1,13 +1,13 @@
 import { Container } from '@crux/di';
 
-export function posts() {
+export function helloWorld() {
   return {
     mount,
     unmount,
   };
 
   async function mount(el: Element, container: Container.API) {
-    el.innerHTML = 'Posts';
+    el.innerHTML = 'Hello World';
   }
 
   async function unmount(el: Element, container: Container.API) {}

@@ -1,5 +1,6 @@
 import { Container } from '@crux/di';
-export interface API {
-    update(container: Container.API): Promise<void> | void;
+import { AppServices } from '../types';
+export interface API<T> {
+    update(app: Container.API<AppServices>, services: Container.API<T>): Promise<void> | void;
 }
-export declare type Constructor = (el: Element, container: Container.API) => API;
+export declare type Constructor<T> = (el: Element, app: Container.API<AppServices>, services: Container.API<T>) => API<T>;

@@ -2,9 +2,13 @@ import * as Modules from './types';
 import { createModules } from './modules';
 import { Container, createContainer } from '@crux/di';
 
-let container: Container.API;
-let initialModules: Modules.ConstructorCollection;
-let modules: Modules.API;
+interface Services {
+  a: any;
+}
+
+let container: Container.API<Services>;
+let initialModules: Modules.ConstructorCollection<Services>;
+let modules: Modules.API<Services>;
 
 let actionAa: jest.Mock;
 let actionBb: jest.Mock;
@@ -12,7 +16,7 @@ let destroyD: jest.Mock;
 
 describe('modules', () => {
   beforeEach(async function setup() {
-    container = createContainer({
+    container = createContainer(<Services>{
       a: () => jest.fn(),
     });
 

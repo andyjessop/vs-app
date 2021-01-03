@@ -1,9 +1,9 @@
 import { Collection } from './types';
 
-export function allDependenciesExist(
-  services: Collection,
-  dependencies: string[],
+export function allDependenciesExist<T>(
+  services: Collection<T>,
+  dependencies: (keyof T)[],
 ) {
-  const servicesKeys = Object.keys(services);
+  const servicesKeys = <(keyof T)[]>Object.keys(services);
   return dependencies.every((dependency) => servicesKeys.includes(dependency));
 }

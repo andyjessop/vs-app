@@ -27,7 +27,7 @@
           continue;
         }
         const result = listener.handler(data);
-        if (result.then) {
+        if (result === null || result === void 0 ? void 0 : result.then) {
           promises.push(result);
         }
       }

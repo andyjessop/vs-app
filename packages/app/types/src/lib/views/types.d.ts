@@ -1,10 +1,11 @@
 import { Container } from '@crux/di';
-export declare type Mount = (el: Element, container: Container.API) => void;
-export declare type Unmount = Mount;
-export declare type View = {
-    mount: Mount;
-    unmount: Unmount;
+import { AppServices } from '../types';
+export declare type Mount<T> = (el: Element, container: Container.API<T>) => void;
+export declare type Unmount<T> = Mount<T>;
+export declare type View<T> = {
+    mount: Mount<T>;
+    unmount: Unmount<T>;
 };
-export declare type Collection = Map<string, View>;
-export declare type Constructor = (container: Container.API) => View | Promise<View>;
-export declare type ConstructorCollection = Record<string, Constructor>;
+export declare type Collection<T> = Map<string, View<T>>;
+export declare type Constructor<T> = (app: Container.API<AppServices>, container: Container.API<T>) => View<T> | Promise<View<T>>;
+export declare type ConstructorCollection<T> = Record<string, Constructor<T>>;

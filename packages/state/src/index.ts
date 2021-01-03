@@ -15,7 +15,7 @@ export interface Store<T> {
 /**
  * Create a store.
  */
-export function createStore<T extends object>(initialState: T): Store<T> {
+export function createStore<T>(initialState: T): Store<T> {
   const state = { ...initialState };
   const queue = createSyncQueue();
   let paused = false;

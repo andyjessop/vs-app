@@ -12,4 +12,4 @@ export interface Store<T> {
 /**
  * Create a store.
  */
-export declare function createStore<T extends object>(initialState: T): Store<T>;
+export declare function createStore<T>(initialState: T): Store<T>;

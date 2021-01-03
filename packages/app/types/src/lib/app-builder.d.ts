@@ -4,17 +4,18 @@ import * as Layout from './layout/types';
 import * as Modules from './modules/types';
 import * as Mounter from './mounter/types';
 import * as Views from './views/types';
-export declare function createAppBuilder({ baseRoute, createMounter, createRouter, el, layout: createLayout, modules: modulesCollection, routes, services: servicesCollection, views: viewsCollection, }: {
+import { AppServices } from './types';
+export declare function createAppBuilder<T>({ baseRoute, createMounter, createRouter, el, layout: createLayout, modules: modulesCollection, routes, services: servicesCollection, views: viewsCollection, }: {
     baseRoute: string;
-    createMounter: Mounter.Constructor;
+    createMounter: Mounter.Constructor<T>;
     el: Element;
-    layout: Layout.Constructor;
-    modules: Modules.ConstructorCollection;
-    routes: Router.RoutesConfig;
+    layout: Layout.Constructor<T>;
+    modules?: Modules.ConstructorCollection<T>;
+    routes?: Router.RoutesConfig;
     createRouter: Router.Constructor;
-    services?: Container.ConstructorCollection;
-    views: Views.ConstructorCollection;
+    services?: Container.ConstructorCollection<T>;
+    views: Views.ConstructorCollection<T>;
 }): Promise<{
-    dispatch: (moduleName?: string | undefined, action?: string | undefined, data?: any) => void;
-    router: Router.API;
+    app: Container.API<AppServices>;
+    services: Container.API<T>;
 }>;

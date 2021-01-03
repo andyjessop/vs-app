@@ -1,14 +1,16 @@
 import { Container } from '@crux/di';
+import { AppServices } from '../types';
 import * as Views from '../views/types';
 
 export interface API {
   run(): Promise<void>;
 }
 
-export type Constructor = (
-  container: Container.API,
-  views: Views.ConstructorCollection,
+export type Constructor<T> = (
+  app: Container.API<AppServices>,
+  container: Container.API<T>,
+  views: Views.ConstructorCollection<T>,
   selector?: string,
 ) => API;
 
-export type MountedViews = Map<string, Views.View>;
+export type MountedViews<T> = Map<string, Views.View<T>>;

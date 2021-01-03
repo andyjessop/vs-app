@@ -7,14 +7,17 @@ import {
   Constructor,
   ConstructorCollection,
   ConstructorTuple,
+  ConstructorCollectionTuple,
   Model,
 } from './types';
 
-export function createContainer(initialServices?: ConstructorCollection): API {
-  const services: Collection = {};
+export function createContainer<T>(
+  initialServices?: ConstructorCollection<T>,
+): API<T> {
+  const services: Collection<T> = {};
 
   if (initialServices) {
-    Object.entries(initialServices)
+    (<ConstructorCollectionTuple<T>[]>Object.entries(initialServices))
       // ensure dependent constructors are added after independent constructors
       .sort(byDependency)
       .forEach(([key, service]) => {
@@ -31,8 +34,10 @@ export function createContainer(initialServices?: ConstructorCollection): API {
   };
 
   function add(
-    name: string,
-    constructor: Constructor | ConstructorTuple,
+    name: keyof T,
+    constructor:
+      | Constructor<T[keyof T]>
+      | ConstructorTuple<T[keyof T], keyof T>,
   ): boolean {
     if (services[name]) {
       return false;
@@ -65,45 +70,54 @@ export function createContainer(initialServices?: ConstructorCollection): API {
     return true;
   }
 
-  function get<T>(name: string): T | undefined {
+  function get<U extends keyof T>(name: U): T[U] {
     if (!services[name]) {
-      return;
+      throw new Error(`Service ${name} does not exist.`);
     }
 
-    if (!services[name].instance) {
+    if (!services[name]?.instance) {
       instantiate(name);
     }
 
-    return (services[name].instance as unknown) as T;
+    return <T[U]>services[name]?.instance;
   }
 
-  function getSingleton<T>(name: string): T | undefined {
+  function getSingleton<U extends keyof T>(name: U): T[U] {
     if (!services[name]) {
-      return;
+      throw new Error(`Service ${name} does not exist.`);
     }
 
-    return (instantiate(name, true) as unknown) as T;
+    return instantiate(name, true);
   }
 
-  function instantiate(name: string, singleton = false): Model {
-    if (services[name] && services[name].instance && !singleton) {
+  function instantiate<U extends keyof T>(name: U, singleton = false): T[U] {
+    if (!services[name]) {
+      throw new Error('Service does not exist');
+    }
+
+    if ((<Model<T>>services[name]).instance && !singleton) {
+      // @ts-ignore
       return services[name].instance;
     }
 
-    const dependencies = services[name].dependencies
-      ? services[name].dependencies.map((dependency) => instantiate(dependency))
+    const dependencies = services[name]?.dependencies
+      ? services[name]?.dependencies.map((dependency) =>
+          instantiate(dependency),
+        )
       : [];
 
-    const instance = services[name].constructor(...dependencies);
+    const instance = (<Model<T>>services[name]).constructor(
+      ...(dependencies || []),
+    );
 
     if (!singleton) {
-      services[name].instance = instance;
+      (<Model<T>>services[name]).instance = instance;
     }
 
-    return instance;
+    return <T[U]>instance;
   }
 
-  function remove(name: string): true | null {
+  function remove(name: keyof T): true | null {
     if (!services[name]) {
       return null;
     }
@@ -112,7 +126,7 @@ export function createContainer(initialServices?: ConstructorCollection): API {
       return null;
     }
 
-    services[name].instance?.destroy?.();
+    services[name]?.instance?.destroy?.();
 
     delete services[name];
 

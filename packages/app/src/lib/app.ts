@@ -6,7 +6,7 @@ import * as Views from './views/types';
 import { createAppBuilder } from './app-builder';
 import { createMounter } from './mounter/mounter';
 
-export async function createApp({
+export async function createApp<T>({
   baseRoute,
   el,
   layout,
@@ -17,11 +17,11 @@ export async function createApp({
 }: {
   baseRoute: string;
   el: Element;
-  layout: Layout.Constructor;
-  modules: Modules.ConstructorCollection;
-  routes: Router.RoutesConfig;
-  services?: Container.ConstructorCollection;
-  views: Views.ConstructorCollection;
+  layout: Layout.Constructor<T>;
+  modules?: Modules.ConstructorCollection<T>;
+  routes?: Router.RoutesConfig;
+  services?: Container.ConstructorCollection<T>;
+  views: Views.ConstructorCollection<T>;
 }) {
   return createAppBuilder({
     baseRoute,

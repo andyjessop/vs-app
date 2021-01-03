@@ -1,7 +1,7 @@
-import { Collection } from './types';
+import { Collection, Model } from './types';
 
-export function getDependents(name: string, services: Collection) {
+export function getDependents<T>(name: keyof T, services: Collection<T>) {
   return Object.values(services)
-    .filter((service) => service.dependencies.includes(name))
-    .map((service) => service.name);
+    .filter((service) => (<Model<T>>service).dependencies.includes(name))
+    .map((service) => (<Model<T>>service).name);
 }

@@ -1,4 +1,4 @@
-import { createAsyncQueue, createEventEmitter, EventEmitter } from '@crux/utils';
+import { createAsyncQueue, createEventEmitter } from '@crux/utils';
 import { Router } from '@crux/router';
 import { Container, createContainer } from '@crux/di';
 import * as Layout from './layout/types';
@@ -6,43 +6,46 @@ import * as Modules from './modules/types';
 import * as Mounter from './mounter/types';
 import * as Views from './views/types';
 import { createModules } from './modules/modules';
+import { AppServices } from './types';
 
-export async function createAppBuilder({
+export async function createAppBuilder<T>({
   baseRoute,
   createMounter,
   createRouter,
   el,
   layout: createLayout,
-  modules: modulesCollection,
-  routes,
+  modules: modulesCollection = {},
+  routes = {},
   services: servicesCollection,
   views: viewsCollection,
 }: {
   baseRoute: string;
-  createMounter: Mounter.Constructor;
+  createMounter: Mounter.Constructor<T>;
   el: Element;
-  layout: Layout.Constructor;
-  modules: Modules.ConstructorCollection;
-  routes: Router.RoutesConfig;
+  layout: Layout.Constructor<T>;
+  modules?: Modules.ConstructorCollection<T>;
+  routes?: Router.RoutesConfig;
   createRouter: Router.Constructor;
-  services?: Container.ConstructorCollection;
-  views: Views.ConstructorCollection;
+  services?: Container.ConstructorCollection<T>;
+  views: Views.ConstructorCollection<T>;
 }) {
   const router = createRouter(baseRoute, routes);
 
-  const container = createContainer({
+  const services = createContainer(servicesCollection);
+
+  const app = createContainer<AppServices>({
+    dispatch: () => dispatch,
     hooks: createEventEmitter,
     router: () => router,
-    ...servicesCollection,
   });
 
-  const layout = createLayout(el, container);
+  const layout = createLayout(el, app, services);
 
-  const mounter = createMounter(container, viewsCollection, '[data-view-id]');
+  const mounter = createMounter(app, services, viewsCollection, '[data-view-id]');
 
   const queue = createAsyncQueue();
 
-  const modules = await createModules(modulesCollection, container);
+  const modules = await createModules(modulesCollection, app, services);
 
   router.addListener(Router.Events.Transition, () => {
     queue.add(modules.onRouteEnter, router.getCurrentRoute());
@@ -51,8 +54,8 @@ export async function createAppBuilder({
   });
 
   return {
-    dispatch,
-    router,
+    app,
+    services,
   };
 
   function dispatch(moduleName?: string, action?: string, data?: any) {
@@ -62,7 +65,7 @@ export async function createAppBuilder({
   }
 
   async function queuedDispatch(moduleName?: string, action?: string, data?: any) {
-    const hooks = container.get<EventEmitter.API>('hooks');
+    const hooks = app.get('hooks');
     const hookData = { module: moduleName, action, data };
 
     await hooks?.emit('beforeModule', hookData);
@@ -82,7 +85,7 @@ export async function createAppBuilder({
 
     await hooks?.emit('beforeLayout', hookData);
 
-    await layout.update(container);
+    await layout.update(app, services);
 
     await hooks?.emit('beforeMounter', hookData);
 

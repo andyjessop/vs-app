@@ -5,3 +5,4 @@ export * as Modules from './lib/modules/types';
 export * as Mounter from './lib/mounter/types';
 export * as Views from './lib/views/types';
 export * as App from './lib/types';
+export { createStoreModule } from './lib/modules/store';

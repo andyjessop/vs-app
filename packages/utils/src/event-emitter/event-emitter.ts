@@ -51,7 +51,7 @@ export function createEventEmitter(): API {
 
       const result = listener.handler(data);
 
-      if (result.then) {
+      if (result?.then) {
         promises.push(result);
       }
     }

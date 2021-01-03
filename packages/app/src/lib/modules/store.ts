@@ -1,14 +1,17 @@
 import { Container } from '@crux/di';
-import { EventEmitter } from '@crux/utils';
 import { Store } from '@crux/state';
 import { Modules } from '../..';
+import { AppServices } from '../types';
 
-export function createStoreModule(container: Container.API): Modules.Module {
-  const hooks = container.get<EventEmitter.API>('hooks');
-  const store = container.get<Store<any>>('store');
+export function createStoreModule<T>(
+  app: Container.API<AppServices>,
+  services: Container.API<T>,
+): Modules.Module {
+  const hooks = app.get('hooks');
+  const store = <Store<any>>(<unknown>services.get(<keyof T>'store'));
 
-  if (!hooks) {
-    return {};
+  if (!store) {
+    throw new Error('Store service does not exist.');
   }
 
   hooks.addListener('beforeModule', pauseUpdates);

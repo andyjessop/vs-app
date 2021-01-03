@@ -74,47 +74,63 @@ function createContainer(initialServices) {
     return true;
   }
   function get(name) {
+    var _a, _b;
     if (!services[name]) {
-      return;
+      throw new Error(`Service ${name} does not exist.`);
     }
-    if (!services[name].instance) {
+    if (
+      !((_a = services[name]) === null || _a === void 0 ? void 0 : _a.instance)
+    ) {
       instantiate(name);
     }
-    return services[name].instance;
+    return (_b = services[name]) === null || _b === void 0
+      ? void 0
+      : _b.instance;
   }
   function getSingleton(name) {
     if (!services[name]) {
-      return;
+      throw new Error(`Service ${name} does not exist.`);
     }
     return instantiate(name, true);
   }
   function instantiate(name, singleton = false) {
-    if (services[name] && services[name].instance && !singleton) {
+    var _a, _b;
+    if (!services[name]) {
+      throw new Error('Service does not exist');
+    }
+    if (services[name].instance && !singleton) {
       return services[name].instance;
     }
-    const dependencies = services[name].dependencies
-      ? services[name].dependencies.map((dependency) => instantiate(dependency))
+    const dependencies = (
+      (_a = services[name]) === null || _a === void 0 ? void 0 : _a.dependencies
+    )
+      ? (_b = services[name]) === null || _b === void 0
+        ? void 0
+        : _b.dependencies.map((dependency) => instantiate(dependency))
       : [];
-    const instance = services[name].constructor(...dependencies);
+    const instance = services[name].constructor(...(dependencies || []));
     if (!singleton) {
       services[name].instance = instance;
     }
     return instance;
   }
   function remove(name) {
-    var _a, _b;
+    var _a, _b, _c;
     if (!services[name]) {
       return null;
     }
     if (getDependents(name, services).length) {
       return null;
     }
-    (_b =
-      (_a = services[name].instance) === null || _a === void 0
+    (_c =
+      (_b =
+        (_a = services[name]) === null || _a === void 0
+          ? void 0
+          : _a.instance) === null || _b === void 0
         ? void 0
-        : _a.destroy) === null || _b === void 0
+        : _b.destroy) === null || _c === void 0
       ? void 0
-      : _b.call(_a);
+      : _c.call(_b);
     delete services[name];
     return true;
   }

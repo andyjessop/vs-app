@@ -1,2 +1,2 @@
 import { ConstructorCollectionTuple } from './types';
-export declare function byDependency(a: ConstructorCollectionTuple, b: ConstructorCollectionTuple): 1 | -1 | 0;
+export declare function byDependency<T>(a: ConstructorCollectionTuple<T>, b: ConstructorCollectionTuple<T>): 1 | -1 | 0;
