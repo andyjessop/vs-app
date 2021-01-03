@@ -1,7 +1,6 @@
-import { Container } from '@crux/di';
 import { Layout } from '@crux/app';
 
-export function createLayout(el: Element, container: Container.API): Layout.API {
+export function createLayout(el: Element): Layout.API {
   return {
     update,
   };

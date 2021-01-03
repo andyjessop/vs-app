@@ -15,7 +15,7 @@ export interface AppBuilderParams<T> extends AppParams<T> {
     createMounter: Mounter.Constructor<T>;
     createRouter: Router.Constructor;
 }
-export interface AppServices {
+export interface Services {
     dispatch(moduleName?: string | undefined, action?: string | undefined, data?: any): void;
     hooks: EventEmitter.API;
     router: Router.API;

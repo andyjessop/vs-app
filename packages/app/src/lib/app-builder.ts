@@ -6,7 +6,7 @@ import * as Modules from './modules/types';
 import * as Mounter from './mounter/types';
 import * as Views from './views/types';
 import { createModules } from './modules/modules';
-import { AppServices } from './types';
+import { Services as AppServices } from './types';
 
 export async function createAppBuilder<T>({
   baseRoute,

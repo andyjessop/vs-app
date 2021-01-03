@@ -1,5 +1,5 @@
 import { Container } from '@crux/di';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 import * as Views from '../views/types';
 export interface API {
     run(): Promise<void>;

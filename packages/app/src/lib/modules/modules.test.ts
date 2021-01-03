@@ -1,12 +1,14 @@
 import * as Modules from './types';
 import { createModules } from './modules';
 import { Container, createContainer } from '@crux/di';
+import { Services as AppServices } from '../types';
 
 interface Services {
   a: any;
 }
 
 let container: Container.API<Services>;
+let app: Container.API<AppServices>;
 let initialModules: Modules.ConstructorCollection<Services>;
 let modules: Modules.API<Services>;
 
@@ -19,6 +21,8 @@ describe('modules', () => {
     container = createContainer(<Services>{
       a: () => jest.fn(),
     });
+
+    app = <Container.API<AppServices>>(<unknown>jest.fn());
 
     actionAa = jest.fn();
     actionBb = jest.fn();
@@ -41,7 +45,7 @@ describe('modules', () => {
           destroy: jest.fn(),
         };
       },
-      c: (container) => import('./test/dynamic-import-c').then((mod) => mod.createC(container)),
+      c: (container) => import('./test/dynamic-import-c').then((mod) => mod.createC()),
       d: {
         module: () => {
           return {
@@ -55,7 +59,7 @@ describe('modules', () => {
       },
     };
 
-    modules = await createModules(initialModules, container);
+    modules = await createModules(initialModules, app, container);
   });
 
   test('should register initial modules', () => {

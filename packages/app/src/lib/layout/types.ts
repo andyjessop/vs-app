@@ -1,11 +1,11 @@
 import { Container } from '@crux/di';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 
-export interface API<T> {
+export interface API<T = {}> {
   update(app: Container.API<AppServices>, services: Container.API<T>): Promise<void> | void;
 }
 
-export type Constructor<T> = (
+export type Constructor<T = {}> = (
   el: Element,
   app: Container.API<AppServices>,
   services: Container.API<T>,

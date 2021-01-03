@@ -1,6 +1,6 @@
 import { Container } from '@crux/di';
 import { Router } from '@crux/router';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 export interface Module {
     actions?: Record<string, Function>;
     destroy?: () => void;

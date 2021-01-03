@@ -1,10 +1,9 @@
-import { Modules } from '@crux/app';
-import { AppServices } from '@crux/app/types/src/lib/types';
+import { App, Modules } from '@crux/app';
 import { Container } from '@crux/di';
 import { Services } from '..';
 
 export function createTodosModule(
-  app: Container.API<AppServices>,
+  app: Container.API<App.Services>,
   container: Container.API<Services>,
 ): Modules.Module {
   const todos = container.get('todos');

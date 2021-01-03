@@ -4,7 +4,7 @@ import * as Layout from './layout/types';
 import * as Modules from './modules/types';
 import * as Mounter from './mounter/types';
 import * as Views from './views/types';
-import { AppServices } from './types';
+import { Services as AppServices } from './types';
 export declare function createAppBuilder<T>({ baseRoute, createMounter, createRouter, el, layout: createLayout, modules: modulesCollection, routes, services: servicesCollection, views: viewsCollection, }: {
     baseRoute: string;
     createMounter: Mounter.Constructor<T>;

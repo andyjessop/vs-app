@@ -1,11 +1,11 @@
-import { AppServices } from '@crux/app/types/src/lib/types';
+import { App } from '@crux/app';
 import { Container } from '@crux/di';
 import { html, render, TemplateResult } from 'lit-html';
 import { Services } from '..';
 import { count } from '../todos/components/count';
 import { State } from '../todos/todos.model';
 
-export function footerNav(app: Container.API<AppServices>, container: Container.API<Services>) {
+export function footerNav(app: Container.API<App.Services>, container: Container.API<Services>) {
   const router = app.get('router');
   const store = container.get('store');
   const todos = container.get('todos');

@@ -1,5 +1,5 @@
 import { Container } from '@crux/di';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 export declare type Mount<T> = (el: Element, container: Container.API<T>) => void;
 export declare type Unmount<T> = Mount<T>;
 export declare type View<T> = {

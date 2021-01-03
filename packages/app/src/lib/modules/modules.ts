@@ -1,7 +1,7 @@
 import { Container } from '@crux/di';
 import { Router } from '@crux/router';
 import { createAsyncQueue } from '@crux/utils';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 import * as Modules from './types';
 
 export async function createModules<T>(

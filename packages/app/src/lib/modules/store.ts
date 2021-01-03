@@ -1,7 +1,7 @@
 import { Container } from '@crux/di';
 import { Store } from '@crux/state';
 import { Modules } from '../..';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 
 export function createStoreModule<T>(
   app: Container.API<AppServices>,

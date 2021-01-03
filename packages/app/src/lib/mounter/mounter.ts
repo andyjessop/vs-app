@@ -1,7 +1,7 @@
 import * as Mounter from './types';
 import * as Views from '../views/types';
 import { Container } from '@crux/di';
-import type { AppServices } from '../types';
+import type { Services as AppServices } from '../types';
 
 interface DOMRoot {
   el: Element;

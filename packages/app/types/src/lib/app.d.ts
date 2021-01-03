@@ -12,6 +12,6 @@ export declare function createApp<T>({ baseRoute, el, layout, modules: modulesCo
     services?: Container.ConstructorCollection<T>;
     views: Views.ConstructorCollection<T>;
 }): Promise<{
-    app: Container.API<import("./types").AppServices>;
+    app: Container.API<import("./types").Services>;
     services: Container.API<T>;
 }>;

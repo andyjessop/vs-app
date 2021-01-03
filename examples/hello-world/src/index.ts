@@ -7,7 +7,7 @@ if (!appEl) {
   throw Error('No app element found');
 }
 
-createApp({
+createApp<{}>({
   baseRoute: '',
   el: appEl,
   layout: createLayout,
@@ -15,8 +15,6 @@ createApp({
   views: {
     hello: () => import('./views/hello-world').then((mod) => mod.helloWorld()),
   },
-}).then((app) => {
-  app.dispatch('root', 'init');
-
-  (<any>window).app = app;
+}).then(({ app }) => {
+  app.get('dispatch')();
 });

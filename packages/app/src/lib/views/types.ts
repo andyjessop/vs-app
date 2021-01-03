@@ -1,5 +1,5 @@
 import { Container } from '@crux/di';
-import { AppServices } from '../types';
+import { Services as AppServices } from '../types';
 
 export type Mount<T> = (el: Element, container: Container.API<T>) => void; // eslint-disable-line no-undef
 
