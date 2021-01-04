@@ -1,12 +1,14 @@
 import { App } from '@crux/app';
 import { Container } from '@crux/di';
-import { html, render, TemplateResult } from 'lit-html';
+import { html, render } from 'lit-html';
 import { Services } from '..';
 import { count } from '../todos/components/count';
 import { State } from '../todos/todos.model';
+import { LitHtml } from '@crux/lit-html';
 
 export function footerNav(app: Container.API<App.Services>, container: Container.API<Services>) {
   const router = app.get('router');
+  const link: LitHtml.Link = app.get('link')(html);
   const store = container.get('store');
   const todos = container.get('todos');
   let el: Element;
@@ -22,10 +24,6 @@ export function footerNav(app: Container.API<App.Services>, container: Container
     unmount,
   };
 
-  function link(text: string, route: string, selected: boolean): TemplateResult {
-    return html`<a href @click="${(e: Event) => navigtateToRoute(e, route)}">${text}</a>`;
-  }
-
   function getTodosCount(state: State) {
     return state.todos.length;
   }
@@ -36,26 +34,39 @@ export function footerNav(app: Container.API<App.Services>, container: Container
     return update(initialValue, router?.getCurrentRoute()?.name);
   }
 
-  function navigtateToRoute(event: Event, route: string) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    router?.navigate(route);
-  }
-
   function unmount(el: Element) {
     unsubscribe();
   }
 
   function update(todosCount: number, routeName?: string) {
+    debugger;
     return render(
       html`
         ${count(todosCount)}
         <ul class="filters">
-          <li>${link('All', 'root', routeName === 'root')}</li>
-          <li>${link('Active', 'active', routeName === 'active')}</li>
-          <li>${link('Completed', 'completed', routeName === 'completed')}</li>
+          <li>
+            ${link({
+              text: 'All',
+              route: 'root',
+              classname: routeName === 'root' ? 'selected' : '',
+            })}
+          </li>
+          <li>
+            ${link({
+              text: 'Active',
+              route: 'active',
+              classname: routeName === 'active' ? 'selected' : '',
+            })}
+          </li>
+          <li>
+            ${link({
+              text: 'Completed',
+              route: 'completed',
+              classname: routeName === 'completed' ? 'selected' : '',
+            })}
+          </li>
         </ul>
+
         <!-- Hidden if no completed items are left ↓ -->
         <button class="clear-completed" @click=${todos?.removeCompleted}>Clear completed</button>
       `,

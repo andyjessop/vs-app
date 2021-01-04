@@ -3,10 +3,12 @@ import { createTodosModule } from './crux/todos.module';
 import { createLayout } from './crux/todos.layout';
 import { createTodos, State, Todos } from './todos/todos.model';
 import { createStore, Store } from '@crux/state';
+import { createLitHtmlModule } from '@crux/lit-html';
 
 export interface Services {
   store: Store<State>;
   todos: Todos;
+  [key: string]: any;
 }
 
 const appEl = document.getElementById('app');
@@ -20,6 +22,7 @@ createApp<Services>({
   el: appEl,
   layout: createLayout,
   modules: {
+    litHtml: createLitHtmlModule,
     store: createStoreModule,
     todos: createTodosModule,
   },
